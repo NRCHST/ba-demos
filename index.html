@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>BA-demo's</title>
+<style>
+  :root{--bg:#0b0f14;--panel:#121821;--border:#2a3548;--text:#e8eef7;--muted:#8b9bb4;--accent:#4d9fff;
+    --sans:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+  *{box-sizing:border-box}
+  html,body{margin:0;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:var(--sans)}
+  body{padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 16px)}
+  h1{font-size:24px;margin:0 0 4px}
+  p.lead{color:var(--muted);margin:0 0 16px;font-size:15px;line-height:1.4}
+  ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+  li{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px}
+  h2{font-size:18px;margin:0 0 6px}
+  li p{margin:0 0 12px;font-size:15px;line-height:1.4;color:#cfd8e6}
+  .links{display:flex;gap:8px}
+  .links a{flex:1;min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:10px;
+    text-decoration:none;font-weight:600;font-size:16px;border:1px solid var(--border);color:var(--text)}
+  .links a.run{background:var(--accent);border-color:var(--accent);color:#fff}
+  footer{margin-top:20px;font-size:13px;color:var(--muted);line-height:1.4}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+  <h1>BA-demo's</h1>
+  <p class="lead">Onze Bitcoin-bouwsels om te bekijken en uit te proberen in Safari. Geen app, geen account. Alles leest alleen openbare gegevens: niets wordt ondertekend of verstuurd.</p>
+  <ul>
+    <li>
+      <h2>Bitmap Lab</h2>
+      <p>Kies een bloknummer en zie het als een “wijk”: elke transactie in dat blok is een “perceel”.</p>
+      <div class="links">
+        <a class="run" href="bitmap-lab/#run">Run</a>
+        <a href="bitmap-lab/#code">Code</a>
+      </div>
+    </li>
+  </ul>
+  <footer>Broncode: <a href="https://github.com/NRCHST/ba-demos">github.com/NRCHST/ba-demos</a></footer>
+</body>
+</html>

@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0b0f14"/>
+<title>Bitmap Lab — Ordinals + Bitcoin</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121821;
+    --panel2: #182030;
+    --border: #2a3548;
+    --border-soft: #1e2838;
+    --text: #e8eef7;
+    --muted: #8b9bb4;
+    --accent: #4d9fff;
+    --accent-dim: #2a5a9a;
+    --ok: #3dd68c;
+    --warn: #f0b429;
+    --err: #ff6b7a;
+    --deed: #c084fc;
+    --parcel: #38bdf8;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  pre, code { overflow-wrap: anywhere; }
+  html, body { margin: 0; padding: 0; }
+  html { overflow-x: hidden; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.45;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: var(--accent); }
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 2.5rem;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+    padding-right: calc(1.25rem + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(1.25rem + env(safe-area-inset-left, 0px));
+  }
+
+  /* Header / legend */
+  .hero {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: linear-gradient(145deg, #141c28 0%, #0e1420 100%);
+    padding: 1.15rem 1.35rem;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    margin: 0 0 .35rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .hero .sub {
+    margin: 0 0 .9rem;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: .65rem;
+  }
+  .legend-item {
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: .65rem .8rem;
+    font-size: .82rem;
+  }
+  .legend-item strong {
+    display: block;
+    color: var(--accent);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .2rem;
+  }
+
+  /* Input bar */
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+    align-items: flex-end;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .85rem 1rem;
+    margin-bottom: 1rem;
+  }
+  .field { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
+  .field label {
+    font-size: .7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 7px;
+    padding: .45rem .6rem;
+    font-family: var(--mono);
+    font-size: .82rem;
+    min-width: 7rem;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(77,159,255,.2);
+  }
+  .field.grow { flex: 1 1 180px; }
+  .field.grow input { width: 100%; min-width: 12rem; }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--panel2);
+    color: var(--text);
+    padding: .5rem .95rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .85rem;
+    font-weight: 560;
+    height: 2.15rem;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #061018;
+  }
+  .btn.ghost { background: transparent; }
+  .btn.sm {
+    height: auto;
+    padding: .2rem .45rem;
+    font-size: .72rem;
+    font-weight: 500;
+  }
+  .base-cfg {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-left: auto;
+    font-size: .75rem;
+    color: var(--muted);
+  }
+  .base-cfg input {
+    width: 14rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: .35rem .5rem;
+    font-family: var(--mono);
+    font-size: .75rem;
+  }
+
+  /* Stepper */
+  .stepper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-bottom: 1rem;
+    padding: .5rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .step {
+    flex: 1 1 auto;
+    min-width: 5.5rem;
+    text-align: center;
+    padding: .55rem .4rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: .78rem;
+    font-weight: 560;
+    transition: .15s ease;
+  }
+  .step .n {
+    display: block;
+    font-size: .65rem;
+    opacity: .7;
+    margin-bottom: .1rem;
+  }
+  .step:hover { background: var(--panel2); color: var(--text); }
+  .step.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .step.done { color: var(--ok); }
+  .step.err { color: var(--err); }
+
+  /* Layout: main + context */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 1rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .wrap {
+      padding-top: calc(.75rem + env(safe-area-inset-top, 0px));
+      padding-right: calc(.75rem + env(safe-area-inset-right, 0px));
+      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+      padding-left: calc(.75rem + env(safe-area-inset-left, 0px));
+    }
+
+    /* Stack legend cards */
+    .legend {
+      grid-template-columns: 1fr;
+    }
+
+    /* Input bar: vertical stack, full-width controls */
+    .bar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: .65rem;
+    }
+    .field, .field.grow { width: 100%; flex: 0 0 auto; }
+    .field.grow input { min-width: 0; width: 100%; }
+    .field input,
+    .base-cfg input {
+      font-size: 16px; /* prevent iOS Safari zoom on focus */
+      min-height: 44px;
+      padding: .65rem .75rem;
+    }
+    .btn {
+      width: 100%;
+      min-height: 44px;
+      height: auto;
+      padding: .7rem 1rem;
+      font-size: 1rem;
+    }
+    .base-cfg {
+      margin-left: 0;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .base-cfg input { flex: 1 1 auto; width: auto; min-width: 0; }
+
+    /* Stepper: horizontal scroll, touch-friendly targets */
+    .stepper {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      gap: .4rem;
+      scrollbar-width: thin;
+    }
+    .step {
+      flex: 0 0 auto;
+      min-width: 4.75rem;
+      min-height: 44px;
+      padding: .55rem .65rem;
+    }
+
+    /* Full-width panels; context below so content isn't crushed */
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .panels { width: 100%; min-width: 0; }
+    .panel { padding: .85rem .85rem 1rem; }
+    .context {
+      order: 1;
+      position: static !important;
+      width: 100%;
+    }
+
+    /* KV / endpoints don't overflow */
+    .kv {
+      grid-template-columns: 1fr;
+      gap: .15rem .35rem;
+    }
+    .kv .actions { margin-bottom: .45rem; }
+    .endpoint-row code { max-width: 100%; }
+
+    /* Tables stay in their scroll container */
+    .table-wrap {
+      max-height: 240px;
+      width: 100%;
+    }
+
+    /* Raw / pre: capped height + break long hex/txids */
+    details.raw pre {
+      max-height: 220px;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+    }
+
+    /* Slightly larger small action buttons for touch */
+    .btn.sm {
+      min-height: 36px;
+      padding: .35rem .65rem;
+      font-size: .8rem;
+    }
+  }
+
+  .panels {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .panel { display: none; padding: 1rem 1.15rem 1.25rem; }
+  .panel.active { display: block; }
+  .panel h2 {
+    margin: 0 0 .35rem;
+    font-size: 1.05rem;
+  }
+  .panel .desc {
+    margin: 0 0 .85rem;
+    color: var(--muted);
+    font-size: .85rem;
+  }
+  .endpoint-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    align-items: center;
+    margin-bottom: .65rem;
+    font-family: var(--mono);
+    font-size: .75rem;
+  }
+  .endpoint-row code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: .3rem .55rem;
+    border-radius: 6px;
+    word-break: break-all;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .2rem .5rem;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .badge.ok { color: var(--ok); border-color: rgba(61,214,140,.35); background: rgba(61,214,140,.08); }
+  .badge.err { color: var(--err); border-color: rgba(255,107,122,.35); background: rgba(255,107,122,.08); }
+  .badge.load { color: var(--warn); border-color: rgba(240,180,41,.35); background: rgba(240,180,41,.08); }
+  .badge.idle { color: var(--muted); }
+
+  .insight {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    margin-bottom: .75rem;
+  }
+  .insight h3 {
+    margin: 0 0 .5rem;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--accent);
+  }
+  .kv {
+    display: grid;
+    grid-template-columns: minmax(110px, 140px) 1fr auto;
+    gap: .35rem .5rem;
+    font-size: .82rem;
+    align-items: start;
+  }
+  .kv .k { color: var(--muted); }
+  .kv .v {
+    font-family: var(--mono);
+    font-size: .78rem;
+    word-break: break-all;
+  }
+  .kv .actions { white-space: nowrap; }
+
+  .table-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 280px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: .75rem;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-size: .78rem;
+    font-family: var(--mono);
+  }
+  th, td {
+    text-align: left;
+    padding: .4rem .55rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  th {
+    background: var(--panel2);
+    color: var(--muted);
+    font-weight: 560;
+    position: sticky;
+    top: 0;
+    font-family: var(--sans);
+    font-size: .72rem;
+    text-transform: uppercase;
+  }
+  tr:hover td { background: rgba(77,159,255,.06); }
+  tr.selected td { background: rgba(77,159,255,.14); }
+  td.parcel { color: var(--parcel); }
+  button.linkish {
+    appearance: none;
+    border: none;
+    background: none;
+    color: var(--parcel);
+    font-family: var(--mono);
+    font-size: inherit;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  details.raw {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0e14;
+    margin-top: .5rem;
+  }
+  details.raw summary {
+    cursor: pointer;
+    padding: .5rem .75rem;
+    color: var(--muted);
+    font-size: .78rem;
+    user-select: none;
+  }
+  details.raw[open] summary { border-bottom: 1px solid var(--border-soft); }
+  details.raw pre {
+    margin: 0;
+    padding: .75rem;
+    overflow: auto;
+    max-height: 320px;
+    font-family: var(--mono);
+    font-size: .72rem;
+    line-height: 1.4;
+    color: var(--ok);
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    -webkit-overflow-scrolling: touch;
+  }
+  .raw-toolbar {
+    display: flex;
+    gap: .35rem;
+    padding: .4rem .75rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .note {
+    font-size: .8rem;
+    color: var(--muted);
+    margin: .5rem 0 0;
+  }
+  .note.warn { color: var(--warn); }
+  .deed-box {
+    border: 1px dashed rgba(192,132,252,.4);
+    background: rgba(192,132,252,.06);
+    border-radius: 8px;
+    padding: .75rem .9rem;
+    margin-bottom: .75rem;
+    font-size: .85rem;
+  }
+  .deed-box strong { color: var(--deed); }
+
+  /* Context help */
+  .context {
+    position: sticky;
+    top: .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel);
+    padding: 1rem;
+  }
+  .context h2 {
+    margin: 0 0 .5rem;
+    font-size: .85rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .context .body {
+    font-size: .85rem;
+    color: var(--text);
+  }
+  .context .body p { margin: 0 0 .65rem; }
+  .context .body ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--muted);
+    font-size: .8rem;
+  }
+  .context .body li { margin-bottom: .3rem; }
+
+  .toast {
+    position: fixed;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    right: calc(1.25rem + env(safe-area-inset-right, 0px));
+    background: var(--panel2);
+    border: 1px solid var(--ok);
+    color: var(--ok);
+    padding: .5rem .85rem;
+    border-radius: 8px;
+    font-size: .8rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; }
+
+  .spinner {
+    display: inline-block;
+    width: .7rem; height: .7rem;
+    border: 2px solid rgba(240,180,41,.3);
+    border-top-color: var(--warn);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    vertical-align: -1px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. Header legend -->
+  <header class="hero">
+    <h1>Bitmap Lab</h1>
+    <p class="sub">Verken de Bitmap-stack via Ordinals recursive endpoints — district = block height, parcel = tx-index, .bitmap = deed (niet het terrein).</p>
+    <p class="sub" id="bron">Bron: <code>https://0rdinals.com/r/…</code> — rechtstreeks vanuit je browser (die site staat dat toe), zonder eigen server. Alleen lezen: deze pagina tekent of verstuurt nooit iets.</p>
+    <div class="legend">
+      <div class="legend-item">
+        <strong>District</strong>
+        Bitcoin block height <em>N</em> ↔ Bitmap district <em>N</em>
+      </div>
+      <div class="legend-item">
+        <strong>Parcel</strong>
+        Bitcoin tx-index <em>i</em> ↔ Bitmap parcel <em>i.N</em>
+      </div>
+      <div class="legend-item">
+        <strong>Deed (.bitmap)</strong>
+        De <code>.bitmap</code>-inscription is het eigendomsakte (deed), <em>niet</em> het terrein zelf.
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. Input bar -->
+  <div class="bar" id="inputBar">
+    <div class="field">
+      <label for="height">Hoogte / district</label>
+      <input id="height" type="number" min="0" value="404" />
+    </div>
+    <div class="field grow">
+      <label for="blockHash">Block hash (optioneel)</label>
+      <input id="blockHash" type="text" placeholder="laat leeg → via /r/blockhash/N" spellcheck="false" />
+    </div>
+    <div class="field grow">
+      <label for="inscriptionId">District inscription id (deed, optioneel)</label>
+      <input id="inscriptionId" type="text" placeholder="plak inscription id… (geen auto-index)" spellcheck="false" />
+    </div>
+    <button class="btn primary" type="button" id="btnLoad">Laad district</button>
+    <button class="btn ghost" type="button" id="btnReset">Reset</button>
+    <div class="base-cfg">
+      <span>Base</span>
+      <input id="baseUrl" type="text" value="https://0rdinals.com" spellcheck="false" title="Publieke ord-host (direct vanuit de browser)" />
+    </div>
+  </div>
+
+  <!-- 3. Pipeline stepper -->
+  <nav class="stepper" id="stepper" aria-label="Pipeline">
+    <button type="button" class="step active" data-step="tip"><span class="n">1</span>Tip</button>
+    <button type="button" class="step" data-step="terrain"><span class="n">2</span>Terrain</button>
+    <button type="button" class="step" data-step="blockinfo"><span class="n">3</span>Blockinfo</button>
+    <button type="button" class="step" data-step="deed"><span class="n">4</span>Deed</button>
+    <button type="button" class="step" data-step="children"><span class="n">5</span>Children</button>
+    <button type="button" class="step" data-step="detail"><span class="n">6</span>Detail</button>
+  </nav>
+
+  <div class="layout">
+    <main class="panels">
+
+      <!-- Tip -->
+      <section class="panel active" id="panel-tip" data-step="tip">
+        <h2>Tip — chain tip &amp; blockhash</h2>
+        <p class="desc">Eerst vragen we de actuele tip-hoogte en de hash van jouw district-block. Zo weet je of district N al bestaat (N ≤ tip).</p>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-tip">https://0rdinals.com/r/blockheight</code>
+          <span class="badge idle" id="st-tip">idle</span>
+        </div>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-tip-hash">https://0rdinals.com/r/blockhash/&lt;h&gt;</code>
+        </div>
+        <div class="insight" id="insight-tip">
+          <h3>Parsed insight</h3>
+          <div class="kv" id="kv-tip"><div class="k">—</div><div class="v">Nog niet geladen</div><div></div></div>
+        </div>
+        <details class="raw" id="raw-tip">
+          <summary>Raw response</summary>
+          <div class="raw-toolbar"><button class="btn sm" type="button" data-copy="raw-tip-pre">Kopieer</button></div>
+          <pre id="raw-tip-pre"></pre>
+        </details>
+      </section>
+
+      <!-- Terrain -->
+      <section class="panel" id="panel-terrain" data-step="terrain">
+        <h2>Terrain — /r/block (district map)</h2>
+        <p class="desc">Ruwe Bitcoin-block hex. Client-side parse: header → block_hash + timestamp, compactSize → tx_count, eerste N txs → parcel-lijst. <strong>Dit is de district-kaart</strong> — niet de deed.</p>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-terrain">https://0rdinals.com/r/block/&lt;h&gt;</code>
+          <span class="badge idle" id="st-terrain">idle</span>
+        </div>
+        <div class="insight">
+          <h3>Parsed insight</h3>
+          <div class="kv" id="kv-terrain"><div class="k">—</div><div class="v">Nog niet geladen</div><div></div></div>
+        </div>
+        <div class="table-wrap" id="parcel-table-wrap" hidden>
+          <table>
+            <thead>
+              <tr><th>Index i</th><th>Parcel</th><th>Txid</th><th>Size</th><th></th></tr>
+            </thead>
+            <tbody id="parcel-tbody"></tbody>
+          </table>
+        </div>
+        <p class="note" id="terrain-note"></p>
+        <details class="raw" id="raw-terrain">
+          <summary>Raw hex / response (inklapt)</summary>
+          <div class="raw-toolbar"><button class="btn sm" type="button" data-copy="raw-terrain-pre">Kopieer</button></div>
+          <pre id="raw-terrain-pre"></pre>
+        </details>
+      </section>
+
+      <!-- Blockinfo -->
+      <section class="panel" id="panel-blockinfo" data-step="blockinfo">
+        <h2>Blockinfo — lichte metadata</h2>
+        <p class="desc">Vergelijk <code>transaction_count</code> uit /r/blockinfo met de geparsde terrain. Handig als /r/block te zwaar is — maar voor Bitmap-parcels heb je de hex nodig.</p>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-blockinfo">https://0rdinals.com/r/blockinfo/&lt;h&gt;</code>
+          <span class="badge idle" id="st-blockinfo">idle</span>
+        </div>
+        <div class="insight">
+          <h3>Parsed insight</h3>
+          <div class="kv" id="kv-blockinfo"><div class="k">—</div><div class="v">Nog niet geladen</div><div></div></div>
+        </div>
+        <details class="raw">
+          <summary>Raw JSON</summary>
+          <div class="raw-toolbar"><button class="btn sm" type="button" data-copy="raw-blockinfo-pre">Kopieer</button></div>
+          <pre id="raw-blockinfo-pre"></pre>
+        </details>
+      </section>
+
+      <!-- Deed -->
+      <section class="panel" id="panel-deed" data-step="deed">
+        <h2>Deed — .bitmap inscription</h2>
+        <p class="desc">De inscription met content als <code>{N}.bitmap</code> is de <em>akte</em>. Het terrein (block) bestaat altijd on-chain; de deed is optioneel en wijst ownership aan.</p>
+        <div class="deed-box">
+          <strong>Geen auto-lookup.</strong> Ordinals recursive API mapt N niet naar inscription_id.
+          Plak hieronder een district-inscription id (uit je eigen OCI/index). Deze lab raadt geen Magic Eden of TRAC aan.
+        </div>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-deed">https://0rdinals.com/r/inscription/&lt;id&gt;</code>
+          <span class="badge idle" id="st-deed">idle</span>
+        </div>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-deed-content">https://0rdinals.com/content/&lt;id&gt;</code>
+        </div>
+        <div class="insight">
+          <h3>Parsed insight</h3>
+          <div class="kv" id="kv-deed"><div class="k">—</div><div class="v">Plak een inscription id en laad opnieuw, of open dit paneel na laden.</div><div></div></div>
+        </div>
+        <details class="raw">
+          <summary>Raw inscription + content</summary>
+          <div class="raw-toolbar"><button class="btn sm" type="button" data-copy="raw-deed-pre">Kopieer</button></div>
+          <pre id="raw-deed-pre"></pre>
+        </details>
+      </section>
+
+      <!-- Children -->
+      <section class="panel" id="panel-children" data-step="children">
+        <h2>Children — inscribed parcel deeds</h2>
+        <p class="desc">Child inscriptions van de district-deed kunnen parcel-deeds zijn (bijv. <code>i.N</code>). Vereist een district inscription id.</p>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-children">https://0rdinals.com/r/children/&lt;district_inscription_id&gt;</code>
+          <span class="badge idle" id="st-children">idle</span>
+        </div>
+        <div class="insight">
+          <h3>Parsed insight</h3>
+          <div class="kv" id="kv-children"><div class="k">—</div><div class="v">Geen district inscription id</div><div></div></div>
+        </div>
+        <div class="table-wrap" id="children-table-wrap" hidden>
+          <table>
+            <thead><tr><th>#</th><th>Child inscription id</th><th></th></tr></thead>
+            <tbody id="children-tbody"></tbody>
+          </table>
+        </div>
+        <details class="raw">
+          <summary>Raw JSON</summary>
+          <div class="raw-toolbar"><button class="btn sm" type="button" data-copy="raw-children-pre">Kopieer</button></div>
+          <pre id="raw-children-pre"></pre>
+        </details>
+      </section>
+
+      <!-- Detail -->
+      <section class="panel" id="panel-detail" data-step="detail">
+        <h2>Parcel detail — /r/tx</h2>
+        <p class="desc">Kies een parcel (txid) uit de terrain-lijst. Toont de recursive tx-view: wat zit er in die transactie?</p>
+        <div class="endpoint-row">
+          <code class="ep" id="ep-detail">https://0rdinals.com/r/tx/&lt;txid&gt;</code>
+          <span class="badge idle" id="st-detail">idle</span>
+        </div>
+        <div class="insight">
+          <h3>Parsed insight</h3>
+          <div class="kv" id="kv-detail"><div class="k">—</div><div class="v">Selecteer een parcel in Terrain</div><div></div></div>
+        </div>
+        <details class="raw">
+          <summary>Raw response</summary>
+          <div class="raw-toolbar"><button class="btn sm" type="button" data-copy="raw-detail-pre">Kopieer</button></div>
+          <pre id="raw-detail-pre"></pre>
+        </details>
+      </section>
+    </main>
+
+    <!-- 5. Context help -->
+    <aside class="context" id="contextBox">
+      <h2>Wat betekent dit voor Bitmap?</h2>
+      <div class="body" id="contextBody"></div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const MAX_PARCELS = 25;
+  const CONTEXT = {
+    tip: `
+      <p><strong>Tip</strong> vertelt of district N al bestaat: als N groter is dan de tip-hoogte, is het block nog niet gemined.</p>
+      <ul>
+        <li>District N = height N — alleen geldig als N ≤ tip.</li>
+        <li>Blockhash koppelt je district aan een unieke chain tip-ancestor.</li>
+        <li>Geen Bitmap-specifieke call: pure Bitcoin/ord recursive.</li>
+      </ul>`,
+    terrain: `
+      <p><strong>Terrain</strong> is de district-kaart: elke tx in block N is parcel <em>i.N</em>.</p>
+      <ul>
+        <li>Index 0 = coinbase = vaak “hoofdstraat” van het district.</li>
+        <li>De hex is het terrein zelf — altijd on-chain, ongeacht of iemand .bitmap heeft geclaimd.</li>
+        <li>ordinals.com mist /r/block nog; 0rdinals.com werkt wel.</li>
+      </ul>`,
+    blockinfo: `
+      <p><strong>Blockinfo</strong> is metadata zonder volle hex. Handig om tx_count te checken.</p>
+      <ul>
+        <li>Vergelijk transaction_count met de geparsde terrain.</li>
+        <li>Geeft géén parcel-txids — daarvoor blijft /r/block nodig.</li>
+      </ul>`,
+    deed: `
+      <p>De <strong>.bitmap deed</strong> is ownership, niet het land.</p>
+      <ul>
+        <li>Content-patroon: <code>{N}.bitmap</code> (tekst).</li>
+        <li>OCI/eigen index mapt N → inscription_id; recursive API doet dat niet.</li>
+        <li>Zonder deed bestaat het terrein nog steeds.</li>
+      </ul>`,
+    children: `
+      <p><strong>Children</strong> van de district-deed kunnen parcel-deeds zijn.</p>
+      <ul>
+        <li>Niet elke child is een parcel — inspecteer content.</li>
+        <li>Parcel-deed claimt typisch <code>i.N</code>, parallel aan tx-index i.</li>
+      </ul>`,
+    detail: `
+      <p><strong>Parcel detail</strong> zoomt in op één tx = één parcel.</p>
+      <ul>
+        <li>txid is de canonieke parcel-identiteit on-chain.</li>
+        <li>Inscriptions in die tx kunnen later content/utility toevoegen.</li>
+      </ul>`,
+  };
+
+  const state = {
+    height: 404,
+    tip: null,
+    blockHash: null,
+    terrain: null,
+    blockinfo: null,
+    deed: null,
+    children: null,
+    selectedTxid: null,
+    selectedIndex: null,
+    detail: null,
+    stepStatus: {},
+  };
+
+  // ——— DOM helpers ———
+  const $ = (id) => document.getElementById(id);
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 1600);
+  }
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast("Gekopieerd");
+    } catch {
+      toast("Kopiëren mislukt");
+    }
+  }
+  function setBadge(id, kind, label) {
+    const el = $(id);
+    if (!el) return;
+    el.className = "badge " + kind;
+    el.innerHTML = kind === "load"
+      ? `<span class="spinner"></span> ${label}`
+      : label;
+  }
+  function kvHtml(rows) {
+    return rows.map(([k, v, copyVal]) => {
+      const actions = copyVal
+        ? `<div class="actions"><button class="btn sm" type="button" data-copy-val="${escapeAttr(copyVal)}">Kopieer</button></div>`
+        : `<div></div>`;
+      return `<div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(String(v ?? "—"))}</div>${actions}`;
+    }).join("");
+  }
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function escapeAttr(s) {
+    return escapeHtml(s).replace(/'/g, "&#39;");
+  }
+  function pretty(x) {
+    if (typeof x === "string") return x;
+    try { return JSON.stringify(x, null, 2); } catch { return String(x); }
+  }
+  function truncate(s, n = 120) {
+    s = String(s);
+    return s.length > n ? s.slice(0, n) + "…" : s;
+  }
+
+  // ——— Direct fetch (geen proxy: 0rdinals.com stuurt Access-Control-Allow-Origin: *) ———
+  // Alleen GET op publieke, read-only data. Niets tekenen, niets uitgeven.
+  function upstreamBase() {
+    return ($("baseUrl").value || "https://0rdinals.com").trim().replace(/\/$/, "");
+  }
+  async function proxyGet(path) {
+    const url = `${upstreamBase()}/${path.replace(/^\//, "")}`;
+    try {
+      const res = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
+      const text = await res.text();
+      return { ok: res.ok, status: res.status, text, url, upstream: url };
+    } catch (err) {
+      return { ok: false, status: 0, text: "Netwerk/CORS-fout: " + (err && err.message || err), url, upstream: url };
+    }
+  }
+
+  // ——— Block parse (Web Crypto) ———
+  function hexToBytes(hex) {
+    const clean = String(hex).replace(/\s+/g, "").replace(/^"|"$/g, "");
+    if (!/^[0-9a-fA-F]*$/.test(clean) || clean.length % 2 !== 0) {
+      throw new Error("Ongeldige hex");
+    }
+    const out = new Uint8Array(clean.length / 2);
+    for (let i = 0; i < out.length; i++) {
+      out[i] = parseInt(clean.substr(i * 2, 2), 16);
+    }
+    return out;
+  }
+  function bytesToHex(bytes) {
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  function readU32LE(buf, off) {
+    return buf[off] | (buf[off + 1] << 8) | (buf[off + 2] << 16) | ((buf[off + 3] << 24) >>> 0);
+  }
+  function readCompactSize(buf, offset) {
+    if (offset >= buf.length) throw new Error("compactSize: EOF");
+    const first = buf[offset];
+    if (first < 0xfd) return { value: first, size: 1 };
+    if (first === 0xfd) {
+      if (offset + 3 > buf.length) throw new Error("compactSize fd EOF");
+      return { value: buf[offset + 1] | (buf[offset + 2] << 8), size: 3 };
+    }
+    if (first === 0xfe) {
+      if (offset + 5 > buf.length) throw new Error("compactSize fe EOF");
+      return { value: readU32LE(buf, offset + 1), size: 5 };
+    }
+    if (offset + 9 > buf.length) throw new Error("compactSize ff EOF");
+    const lo = readU32LE(buf, offset + 1);
+    const hi = readU32LE(buf, offset + 5);
+    if (hi !== 0) throw new Error("compactSize te groot");
+    return { value: lo, size: 9 };
+  }
+  async function sha256(bytes) {
+    const hash = await crypto.subtle.digest("SHA-256", bytes);
+    return new Uint8Array(hash);
+  }
+  async function doubleSha256(bytes) {
+    return sha256(await sha256(bytes));
+  }
+  async function hashToHexLE(bytes) {
+    const h = await doubleSha256(bytes);
+    return bytesToHex(h.reverse());
+  }
+  async function parseTx(buf, offset) {
+    const start = offset;
+    if (offset + 4 > buf.length) throw new Error("tx version EOF");
+    offset += 4;
+    let hasWitness = false;
+    if (offset + 2 <= buf.length && buf[offset] === 0x00 && buf[offset + 1] === 0x01) {
+      hasWitness = true;
+      offset += 2;
+    }
+    const vin = readCompactSize(buf, offset);
+    offset += vin.size;
+    for (let i = 0; i < vin.value; i++) {
+      if (offset + 36 > buf.length) throw new Error("txin prevout EOF");
+      offset += 36;
+      const scriptLen = readCompactSize(buf, offset);
+      offset += scriptLen.size + scriptLen.value;
+      if (offset + 4 > buf.length) throw new Error("txin sequence EOF");
+      offset += 4;
+    }
+    const vout = readCompactSize(buf, offset);
+    offset += vout.size;
+    for (let i = 0; i < vout.value; i++) {
+      if (offset + 8 > buf.length) throw new Error("txout value EOF");
+      offset += 8;
+      const scriptLen = readCompactSize(buf, offset);
+      offset += scriptLen.size + scriptLen.value;
+    }
+    const beforeWitness = offset;
+    if (hasWitness) {
+      for (let i = 0; i < vin.value; i++) {
+        const nStack = readCompactSize(buf, offset);
+        offset += nStack.size;
+        for (let j = 0; j < nStack.value; j++) {
+          const itemLen = readCompactSize(buf, offset);
+          offset += itemLen.size + itemLen.value;
+        }
+      }
+    }
+    if (offset + 4 > buf.length) throw new Error("tx locktime EOF");
+    offset += 4;
+    const rawLen = offset - start;
+    let txidBytes;
+    if (hasWitness) {
+      const version = buf.subarray(start, start + 4);
+      const mid = buf.subarray(start + 6, beforeWitness);
+      const lock = buf.subarray(offset - 4, offset);
+      txidBytes = new Uint8Array(version.length + mid.length + lock.length);
+      txidBytes.set(version, 0);
+      txidBytes.set(mid, version.length);
+      txidBytes.set(lock, version.length + mid.length);
+    } else {
+      txidBytes = buf.subarray(start, offset);
+    }
+    return {
+      txid: await hashToHexLE(txidBytes),
+      rawLen,
+      nextOffset: offset,
+    };
+  }
+  async function parseBlock(hex, maxTx = MAX_PARCELS) {
+    const buf = hexToBytes(hex);
+    if (buf.length < 80) throw new Error(`block te kort: ${buf.length} bytes`);
+    const header = buf.subarray(0, 80);
+    const blockHash = await hashToHexLE(header);
+    // header: version(4) prev(32) merkle(32) time(4) bits(4) nonce(4)
+    const timestamp = readU32LE(header, 68);
+    let offset = 80;
+    const txCountCs = readCompactSize(buf, offset);
+    offset += txCountCs.size;
+    const transactionCount = txCountCs.value;
+    const txids = [];
+    const limit = Math.min(maxTx, transactionCount);
+    for (let i = 0; i < transactionCount && txids.length < limit; i++) {
+      const tx = await parseTx(buf, offset);
+      txids.push({ index: i, txid: tx.txid, raw_len: tx.rawLen });
+      offset = tx.nextOffset;
+    }
+    return {
+      block_hash: blockHash,
+      timestamp,
+      timestamp_iso: new Date(timestamp * 1000).toISOString(),
+      transaction_count: transactionCount,
+      bytes: buf.length,
+      txids,
+      parsed_all: limit >= transactionCount,
+    };
+  }
+  function normalizeHexResponse(body) {
+    const trimmed = body.trim();
+    if (trimmed.startsWith('"')) {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed !== "string") throw new Error("verwacht JSON-string hex");
+      return parsed.replace(/\s+/g, "");
+    }
+    if (trimmed.startsWith("{")) {
+      const j = JSON.parse(trimmed);
+      if (typeof j === "string") return j.replace(/\s+/g, "");
+      throw new Error("onverwacht JSON-object voor block hex");
+    }
+    return trimmed.replace(/\s+/g, "");
+  }
+
+  // ——— UI steps ———
+  function showStep(name) {
+    document.querySelectorAll(".step").forEach((el) => {
+      el.classList.toggle("active", el.dataset.step === name);
+    });
+    document.querySelectorAll(".panel").forEach((el) => {
+      el.classList.toggle("active", el.dataset.step === name);
+    });
+    $("contextBody").innerHTML = CONTEXT[name] || "";
+  }
+
+  function updateEndpoints(h) {
+    $("ep-tip").textContent = `${upstreamBase()}/r/blockheight`;
+    $("ep-tip-hash").textContent = `${upstreamBase()}/r/blockhash/${h}`;
+    $("ep-terrain").textContent = `${upstreamBase()}/r/block/${h}`;
+    $("ep-blockinfo").textContent = `${upstreamBase()}/r/blockinfo/${h}`;
+    const id = $("inscriptionId").value.trim();
+    $("ep-deed").textContent = id ? `${upstreamBase()}/r/inscription/${id}` : `${upstreamBase()}/r/inscription/<id>`;
+    $("ep-deed-content").textContent = id ? `${upstreamBase()}/content/${id}` : `${upstreamBase()}/content/<id>`;
+    $("ep-children").textContent = id ? `${upstreamBase()}/r/children/${id}` : `${upstreamBase()}/r/children/<district_inscription_id>`;
+    const tx = state.selectedTxid;
+    $("ep-detail").textContent = tx ? `${upstreamBase()}/r/tx/${tx}` : `${upstreamBase()}/r/tx/<txid>`;
+  }
+
+  // ——— Load pipeline ———
+  async function loadDistrict() {
+    const h = Number($("height").value);
+    if (!Number.isFinite(h) || h < 0) {
+      toast("Ongeldige hoogte");
+      return;
+    }
+    state.height = h;
+    state.selectedTxid = null;
+    state.selectedIndex = null;
+    state.detail = null;
+    updateEndpoints(h);
+    $("btnLoad").disabled = true;
+
+    showStep("tip");
+    await loadTip(h);
+    showStep("terrain");
+    await loadTerrain(h);
+    showStep("blockinfo");
+    await loadBlockinfo(h);
+
+    const insc = $("inscriptionId").value.trim();
+    if (insc) {
+      showStep("deed");
+      await loadDeed(insc);
+      showStep("children");
+      await loadChildren(insc);
+    } else {
+      setBadge("st-deed", "idle", "geen id");
+      setBadge("st-children", "idle", "geen id");
+      $("kv-deed").innerHTML = kvHtml([
+        ["status", "Plak een district inscription id om deed + children te laden"],
+      ]);
+      $("kv-children").innerHTML = kvHtml([["status", "Wacht op inscription id"]]);
+      $("raw-deed-pre").textContent = "";
+      $("raw-children-pre").textContent = "";
+      $("children-table-wrap").hidden = true;
+    }
+
+    showStep(state.terrain ? "terrain" : "tip");
+    $("btnLoad").disabled = false;
+  }
+
+  async function loadTip(h) {
+    setBadge("st-tip", "load", "laden…");
+    try {
+      const tipRes = await proxyGet("r/blockheight");
+      let tipVal = tipRes.text.trim().replace(/^"|"$/g, "");
+      const tipNum = Number(tipVal);
+      let hashText = $("blockHash").value.trim();
+      let hashRes = null;
+      if (!hashText) {
+        hashRes = await proxyGet(`r/blockhash/${h}`);
+        hashText = hashRes.text.trim().replace(/^"|"$/g, "");
+      }
+      state.tip = tipNum;
+      state.blockHash = hashText;
+      if ($("blockHash").value.trim() === "") $("blockHash").value = hashText;
+
+      const exists = Number.isFinite(tipNum) ? h <= tipNum : null;
+      $("kv-tip").innerHTML = kvHtml([
+        ["tip hoogte", tipNum, String(tipNum)],
+        ["district N", h, String(h)],
+        ["N ≤ tip?", exists === null ? "?" : exists ? "ja — district bestaat" : "nee — block nog niet gemined"],
+        ["block hash", hashText, hashText],
+        ["upstream tip", tipRes.upstream],
+        ["upstream hash", (hashRes && hashRes.upstream) || "(handmatig)"],
+      ]);
+      $("raw-tip-pre").textContent = pretty({
+        blockheight: tipRes.ok ? tipNum : { error: tipRes.status, body: tipRes.text },
+        blockhash: hashText,
+      });
+      if (!tipRes.ok) throw new Error(`blockheight HTTP ${tipRes.status}`);
+      setBadge("st-tip", "ok", `${tipRes.status} OK`);
+      document.querySelector('.step[data-step="tip"]').classList.add("done");
+    } catch (err) {
+      setBadge("st-tip", "err", "fout");
+      $("kv-tip").innerHTML = kvHtml([["fout", err.message || err]]);
+      document.querySelector('.step[data-step="tip"]').classList.add("err");
+    }
+  }
+
+  async function loadTerrain(h) {
+    setBadge("st-terrain", "load", "laden…");
+    try {
+      const res = await proxyGet(`r/block/${h}`);
+      $("raw-terrain-pre").textContent = truncate(res.text, 4000);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${truncate(res.text, 200)}`);
+      const hex = normalizeHexResponse(res.text);
+      const parsed = await parseBlock(hex, MAX_PARCELS);
+      state.terrain = parsed;
+      if (!$("blockHash").value.trim()) $("blockHash").value = parsed.block_hash;
+
+      $("kv-terrain").innerHTML = kvHtml([
+        ["district", h, String(h)],
+        ["block_hash", parsed.block_hash, parsed.block_hash],
+        ["timestamp", `${parsed.timestamp} (${parsed.timestamp_iso})`],
+        ["tx_count", parsed.transaction_count, String(parsed.transaction_count)],
+        ["block bytes", parsed.bytes],
+        ["parcels getoond", `${parsed.txids.length}${parsed.parsed_all ? "" : ` / ${parsed.transaction_count}`}`],
+        ["upstream", res.upstream],
+      ]);
+
+      const tbody = $("parcel-tbody");
+      tbody.innerHTML = "";
+      for (const p of parsed.txids) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.index}</td>
+          <td class="parcel">${p.index}.${h}</td>
+          <td><button type="button" class="linkish" data-txid="${p.txid}" data-idx="${p.index}">${p.txid}</button></td>
+          <td>${p.raw_len} B</td>
+          <td><button class="btn sm" type="button" data-copy-val="${p.txid}">Kopieer</button></td>`;
+        tbody.appendChild(tr);
+      }
+      $("parcel-table-wrap").hidden = parsed.txids.length === 0;
+      $("terrain-note").textContent = parsed.parsed_all
+        ? `Alle ${parsed.transaction_count} parcels geparsed. Klik een txid voor detail.`
+        : `Eerste ${parsed.txids.length} van ${parsed.transaction_count} parcels. (Beperkt voor UI-snelheid.)`;
+      $("terrain-note").className = "note";
+
+      setBadge("st-terrain", "ok", `${res.status} OK · ${parsed.bytes} B`);
+      document.querySelector('.step[data-step="terrain"]').classList.add("done");
+    } catch (err) {
+      state.terrain = null;
+      setBadge("st-terrain", "err", "fout");
+      $("kv-terrain").innerHTML = kvHtml([["fout", err.message || err]]);
+      $("parcel-table-wrap").hidden = true;
+      $("terrain-note").textContent = "Tip: ordinals.com mist /r/block; gebruik 0rdinals.com (default).";
+      $("terrain-note").className = "note warn";
+      document.querySelector('.step[data-step="terrain"]').classList.add("err");
+    }
+  }
+
+  async function loadBlockinfo(h) {
+    setBadge("st-blockinfo", "load", "laden…");
+    try {
+      const res = await proxyGet(`r/blockinfo/${h}`);
+      $("raw-blockinfo-pre").textContent = res.text;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      let info;
+      try { info = JSON.parse(res.text); } catch { info = res.text; }
+      state.blockinfo = info;
+      const txCount = info && (info.transaction_count ?? info.tx_count ?? info.transactions);
+      const terrainCount = state.terrain && state.terrain.transaction_count;
+      let compare = "—";
+      if (txCount != null && terrainCount != null) {
+        compare = Number(txCount) === Number(terrainCount)
+          ? `match (${txCount})`
+          : `verschil: blockinfo=${txCount}, terrain=${terrainCount}`;
+      }
+      $("kv-blockinfo").innerHTML = kvHtml([
+        ["transaction_count", txCount ?? "(veld ontbreekt)"],
+        ["vergelijking terrain", compare],
+        ["hash", (info && (info.blockhash || info.hash || info.id)) || "—", info && (info.blockhash || info.hash)],
+        ["upstream", res.upstream],
+      ]);
+      setBadge("st-blockinfo", "ok", `${res.status} OK`);
+      document.querySelector('.step[data-step="blockinfo"]').classList.add("done");
+    } catch (err) {
+      setBadge("st-blockinfo", "err", "fout");
+      $("kv-blockinfo").innerHTML = kvHtml([["fout", err.message || err]]);
+      document.querySelector('.step[data-step="blockinfo"]').classList.add("err");
+    }
+  }
+
+  async function loadDeed(id) {
+    setBadge("st-deed", "load", "laden…");
+    updateEndpoints(state.height);
+    try {
+      const meta = await proxyGet(`r/inscription/${id}`);
+      const content = await proxyGet(`content/${id}`);
+      $("raw-deed-pre").textContent = pretty({
+        inscription: tryParse(meta.text),
+        content_status: content.status,
+        content_preview: truncate(content.text, 2000),
+      });
+      if (!meta.ok) throw new Error(`inscription HTTP ${meta.status}`);
+      const info = tryParse(meta.text);
+      state.deed = { info, content: content.text };
+      const contentType = (info && info.content_type) || "—";
+      $("kv-deed").innerHTML = kvHtml([
+        ["inscription_id", id, id],
+        ["content_type", contentType],
+        ["content preview", truncate(content.text.replace(/\s+/g, " "), 120)],
+        ["deed check", /\.bitmap\b/i.test(content.text) ? "content lijkt op .bitmap deed" : "geen .bitmap in content (check handmatig)"],
+        ["upstream", meta.upstream],
+      ]);
+      setBadge("st-deed", "ok", `${meta.status} OK`);
+      document.querySelector('.step[data-step="deed"]').classList.add("done");
+    } catch (err) {
+      setBadge("st-deed", "err", "fout");
+      $("kv-deed").innerHTML = kvHtml([["fout", err.message || err]]);
+      document.querySelector('.step[data-step="deed"]').classList.add("err");
+    }
+  }
+
+  async function loadChildren(id) {
+    setBadge("st-children", "load", "laden…");
+    try {
+      const res = await proxyGet(`r/children/${id}`);
+      $("raw-children-pre").textContent = res.text;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = tryParse(res.text);
+      state.children = data;
+      const ids = normalizeChildren(data);
+      $("kv-children").innerHTML = kvHtml([
+        ["parent", id, id],
+        ["children count", ids.length],
+        ["upstream", res.upstream],
+      ]);
+      const tbody = $("children-tbody");
+      tbody.innerHTML = "";
+      ids.forEach((cid, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${i}</td><td>${escapeHtml(cid)}</td>
+          <td><button class="btn sm" type="button" data-copy-val="${escapeAttr(cid)}">Kopieer</button></td>`;
+        tbody.appendChild(tr);
+      });
+      $("children-table-wrap").hidden = ids.length === 0;
+      setBadge("st-children", "ok", `${res.status} OK`);
+      document.querySelector('.step[data-step="children"]').classList.add("done");
+    } catch (err) {
+      setBadge("st-children", "err", "fout");
+      $("kv-children").innerHTML = kvHtml([["fout", err.message || err]]);
+      $("children-table-wrap").hidden = true;
+      document.querySelector('.step[data-step="children"]').classList.add("err");
+    }
+  }
+
+  function normalizeChildren(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) {
+      return data.map((x) => (typeof x === "string" ? x : x.id || x.inscription_id || JSON.stringify(x)));
+    }
+    if (Array.isArray(data.ids)) return data.ids;
+    if (Array.isArray(data.children)) {
+      return data.children.map((x) => (typeof x === "string" ? x : x.id || x.inscription_id));
+    }
+    return [];
+  }
+
+  async function loadDetail(txid, index) {
+    state.selectedTxid = txid;
+    state.selectedIndex = index;
+    updateEndpoints(state.height);
+    showStep("detail");
+    setBadge("st-detail", "load", "laden…");
+    document.querySelectorAll("#parcel-tbody tr").forEach((tr) => {
+      tr.classList.toggle("selected", tr.querySelector(`[data-txid="${txid}"]`));
+    });
+    try {
+      const res = await proxyGet(`r/tx/${txid}`);
+      $("raw-detail-pre").textContent = truncate(res.text, 8000);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const body = tryParse(res.text);
+      state.detail = body;
+      $("kv-detail").innerHTML = kvHtml([
+        ["parcel", index != null ? `${index}.${state.height}` : "—"],
+        ["txid", txid, txid],
+        ["response type", typeof body === "string" ? "hex/text" : "json"],
+        ["preview", typeof body === "string" ? truncate(body, 80) : truncate(JSON.stringify(body), 80)],
+        ["upstream", res.upstream],
+      ]);
+      setBadge("st-detail", "ok", `${res.status} OK`);
+      document.querySelector('.step[data-step="detail"]').classList.add("done");
+    } catch (err) {
+      setBadge("st-detail", "err", "fout");
+      $("kv-detail").innerHTML = kvHtml([["fout", err.message || err], ["txid", txid, txid]]);
+      document.querySelector('.step[data-step="detail"]').classList.add("err");
+    }
+  }
+
+  function tryParse(text) {
+    try { return JSON.parse(text); } catch { return text; }
+  }
+
+  function resetAll() {
+    $("height").value = "404";
+    $("blockHash").value = "";
+    $("inscriptionId").value = "";
+    $("baseUrl").value = "https://0rdinals.com";
+    state.terrain = null;
+    state.selectedTxid = null;
+    ["tip","terrain","blockinfo","deed","children","detail"].forEach((s) => {
+      setBadge(`st-${s}`, "idle", "idle");
+      const step = document.querySelector(`.step[data-step="${s}"]`);
+      step.classList.remove("done", "err");
+    });
+    $("parcel-table-wrap").hidden = true;
+    $("children-table-wrap").hidden = true;
+    ["raw-tip-pre","raw-terrain-pre","raw-blockinfo-pre","raw-deed-pre","raw-children-pre","raw-detail-pre"].forEach((id) => {
+      $(id).textContent = "";
+    });
+    updateEndpoints(404);
+    showStep("tip");
+    $("kv-tip").innerHTML = kvHtml([["—", "Nog niet geladen"]]);
+  }
+
+  // ——— Events ———
+  document.querySelectorAll(".step").forEach((btn) => {
+    btn.addEventListener("click", () => showStep(btn.dataset.step));
+  });
+  $("btnLoad").addEventListener("click", () => loadDistrict());
+  $("btnReset").addEventListener("click", () => resetAll());
+  $("height").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") loadDistrict();
+  });
+
+  document.body.addEventListener("click", (e) => {
+    const t = e.target;
+    if (t.matches("[data-copy]")) {
+      const pre = $(t.getAttribute("data-copy"));
+      if (pre) copyText(pre.textContent || "");
+    }
+    if (t.matches("[data-copy-val]")) {
+      copyText(t.getAttribute("data-copy-val") || "");
+    }
+    if (t.matches("[data-txid]")) {
+      loadDetail(t.getAttribute("data-txid"), Number(t.getAttribute("data-idx")));
+    }
+  });
+
+  // init
+  updateEndpoints(404);
+  showStep("tip");
+})();
+</script>
+</body>
+</html>
