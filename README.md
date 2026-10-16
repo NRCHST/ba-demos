@@ -8,12 +8,12 @@ Publieke demo's, per onderwerp, (alleen demo-code) om in Safari te bekijken: htt
 
 ## Bitcoin
 
-| Demo | Fase | Bijgewerkt | Volgende stap | Run | Code |
-|---|---|---|---|---|---|
-| Bitmap Lab | Werkt | 28 sep 2026 | nog niet bepaald | [Run](https://nrchst.github.io/ba-demos/bitmap-lab/#run) | [Code](https://nrchst.github.io/ba-demos/bitmap-lab/#code) |
-| Bitmap Wereld | Werkt | 16 okt 2026 | nog niet bepaald | [Run](https://nrchst.github.io/ba-demos/bitmap-wereld/#run) | [Code](https://nrchst.github.io/ba-demos/bitmap-wereld/#code) |
-| Gratis bitmap-tool | Proef | 16 okt 2026 | adres-opzoeking testen | [Run](https://nrchst.github.io/ba-demos/bitmap-tool/#run) | [Code](https://nrchst.github.io/ba-demos/bitmap-tool/#code) |
-| Bulletin-ontwerp bitmap.land | Ontwerp | 16 okt 2026 | schema van bitmap.land zoeken | [Run](https://nrchst.github.io/ba-demos/bulletin-ontwerp/#run) | [Code](https://nrchst.github.io/ba-demos/bulletin-ontwerp/#code) |
+| Demo | Tags | Fase | Bijgewerkt | Volgende stap | Run | Code |
+|---|---|---|---|---|---|---|
+| Bitmap Lab | Bitcoin, Bitmap, Ordinals | Werkt | 28 sep 2026 | nog niet bepaald | [Run](https://nrchst.github.io/ba-demos/bitmap-lab/#run) | [Code](https://nrchst.github.io/ba-demos/bitmap-lab/#code) |
+| Bitmap Wereld | Bitcoin, Bitmap, Ordinals, 3D | Werkt | 16 okt 2026 | nog niet bepaald | [Run](https://nrchst.github.io/ba-demos/bitmap-wereld/#run) | [Code](https://nrchst.github.io/ba-demos/bitmap-wereld/#code) |
+| Gratis bitmap-tool | Bitcoin, Bitmap, Ordinals, 3D | Proef | 16 okt 2026 | adres-opzoeking testen | [Run](https://nrchst.github.io/ba-demos/bitmap-tool/#run) | [Code](https://nrchst.github.io/ba-demos/bitmap-tool/#code) |
+| Bulletin-ontwerp bitmap.land | Bitcoin, Bitmap | Ontwerp | 16 okt 2026 | schema van bitmap.land zoeken | [Run](https://nrchst.github.io/ba-demos/bulletin-ontwerp/#run) | [Code](https://nrchst.github.io/ba-demos/bulletin-ontwerp/#code) |
 
 Bitmap Lab haalt data rechtstreeks van `https://0rdinals.com/r/…` (die host stuurt `Access-Control-Allow-Origin: *`), dus geen proxy nodig.
 
