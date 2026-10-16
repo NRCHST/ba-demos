@@ -32,7 +32,8 @@
   .links a{flex:1;min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:10px;
     text-decoration:none;font-weight:600;font-size:16px;border:1px solid var(--border);color:var(--text)}
   .links a.run{background:var(--accent);border-color:var(--accent);color:#fff}
-  .next{font-size:12px;color:var(--muted);margin:10px 0 0}
+  .meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:12px;font-size:12px;color:var(--muted)}
+  .next{font-size:12px;color:var(--muted);margin:4px 0 0}
   h2.sec{font-size:15px;margin:20px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
   .empty{color:var(--muted);font-size:15px;margin:16px 0}
   footer{margin-top:20px;font-size:13px;color:var(--muted);line-height:1.4}
@@ -79,9 +80,9 @@ var SECTIES=["Bitcoin"]; // volgorde van de koppen
   $("chips").innerHTML=chips.map(function(c){return '<button type="button" class="chip" data-c="'+esc(c)+'" aria-pressed="'+(c==="Alles")+'">'+esc(c)+'</button>'}).join("");
   $("chips").onclick=function(e){var b=e.target.closest(".chip");if(!b)return;var c=b.dataset.c;
     if(c==="Alles")sel.clear();else if(sel.has(c))sel.delete(c);else sel.add(c);render()};
-  function card(d){return '<li><div class="pills">'+d.tags.map(function(t){return '<span class="pill">'+esc(t)+'</span>'}).join("")+
-    '<span class="pill f-'+d.fase+'">'+d.fase+'</span><span class="pill">Bijgewerkt '+dag(d.bijgewerkt)+'</span></div>'+
-    '<h2>'+esc(d.naam)+'</h2><p>'+esc(d.uitleg)+'</p><div class="links"><a class="run" href="'+d.map+'/#run">Run</a><a href="'+d.map+'/#code">Code</a></div>'+
+  function card(d,sec){var t=d.tags.filter(function(x){return x!==sec});
+    return '<li><h2>'+esc(d.naam)+'</h2><p>'+esc(d.uitleg)+'</p><div class="links"><a class="run" href="'+d.map+'/#run">Run</a><a href="'+d.map+'/#code">Code</a></div>'+
+    '<div class="meta"><span class="pill f-'+d.fase+'">'+d.fase+'</span><span>Bijgewerkt '+dag(d.bijgewerkt)+'</span>'+(t.length?'<span>· '+esc(t.join(" · "))+'</span>':'')+'</div>'+
     '<p class="next">Volgende stap: '+esc(d.volgende)+'</p></li>'}
   function render(){
     document.querySelectorAll(".chip").forEach(function(b){var c=b.dataset.c;b.setAttribute("aria-pressed",String(c==="Alles"?sel.size===0:sel.has(c)))});
@@ -93,8 +94,8 @@ var SECTIES=["Bitcoin"]; // volgorde van de koppen
     $("count").textContent=r.length+(r.length===1?" demo":" demo's");
     var h;
     if(!r.length)h='<p class="empty">Geen demo gevonden.</p>';
-    else if(!q&&!sel.size&&s==="datum")h=SECTIES.map(function(x){var g=r.filter(function(d){return d.sectie===x});return g.length?'<section><h2 class="sec">'+esc(x)+'</h2><ul>'+g.map(card).join("")+'</ul></section>':""}).join("");
-    else h='<ul style="margin-top:12px">'+r.map(card).join("")+'</ul>';
+    else if(!q&&!sel.size&&s==="datum")h=SECTIES.map(function(x){var g=r.filter(function(d){return d.sectie===x});return g.length?'<section><h2 class="sec">'+esc(x)+'</h2><ul>'+g.map(function(d){return card(d,x)}).join("")+'</ul></section>':""}).join("");
+    else h='<ul style="margin-top:12px">'+r.map(function(d){return card(d)}).join("")+'</ul>';
     $("list").innerHTML=h;
   }
   $("q").oninput=render;$("sort").onchange=render;render();
