@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Bitmap Wereld — Code ↔ Run</title>
+<style>
+  :root{--bg:#0b0f14;--panel:#121821;--border:#2a3548;--text:#e8eef7;--muted:#8b9bb4;--accent:#4d9fff;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+  *{box-sizing:border-box}
+  html,body{margin:0;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:var(--sans)}
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 12px}
+  .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .top a.back{color:var(--muted);text-decoration:none;font-size:15px}
+  h1{font-size:18px;margin:0;flex:1}
+  .switch{display:flex;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:3px;margin-top:8px}
+  .switch button{flex:1;min-height:44px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:16px;font-weight:600}
+  .switch button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .how{font-size:13px;color:var(--muted);margin:8px 0 0}
+  main{padding:10px 12px}
+  #code .bar{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .btn{min-height:44px;padding:0 14px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);font-size:15px;text-decoration:none;display:inline-flex;align-items:center}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  pre{margin:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px;font:12px/1.45 var(--mono);
+      white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;max-width:100%}
+  #run iframe{display:block;width:100%;height:calc(100vh - 140px);height:calc(100dvh - 140px);border:1px solid var(--border);border-radius:10px;background:#0b0f14}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <a class="back" href="../">‹ Alle demo's</a>
+    <h1>Bitmap Wereld</h1>
+  </div>
+  <div class="switch" role="group" aria-label="Code of Run">
+    <button type="button" id="bCode" aria-pressed="true">Code</button>
+    <button type="button" id="bRun" aria-pressed="false">Run</button>
+  </div>
+  <p class="how" id="how">Bestand: <code>app.html</code> — kopieer en open in een browser, of tik op <b>Run</b>.</p>
+</header>
+<main>
+  <section id="code">
+    <div class="bar">
+      <button class="btn primary" type="button" id="copy">Kopieer code</button>
+      <a class="btn" href="app.html" target="_blank" rel="noopener">Open los</a>
+    </div>
+    <pre id="src">Code laden…</pre>
+  </section>
+  <section id="run" hidden>
+    <iframe id="frame" title="Bitmap Wereld (live)" loading="lazy"></iframe>
+  </section>
+</main>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var srcText="";
+  fetch("app.html",{cache:"no-cache"}).then(function(r){return r.text()}).then(function(t){srcText=t;$("src").textContent=t})
+    .catch(function(e){$("src").textContent="Kon code niet laden: "+e});
+  function setMode(m){
+    var run=(m==="run");
+    $("bCode").setAttribute("aria-pressed",String(!run));
+    $("bRun").setAttribute("aria-pressed",String(run));
+    $("code").hidden=run; $("run").hidden=!run;
+    if(run && !$("frame").getAttribute("src")) $("frame").setAttribute("src","app.html");
+    if(location.hash!=="#"+m) history.replaceState(null,"","#"+m);
+  }
+  $("bCode").onclick=function(){setMode("code")};
+  $("bRun").onclick=function(){setMode("run")};
+  $("copy").onclick=function(){
+    var done=function(){$("copy").textContent="Gekopieerd ✓";setTimeout(function(){$("copy").textContent="Kopieer code"},1500)};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(srcText).then(done,fallback)}else fallback();
+    function fallback(){var ta=document.createElement("textarea");ta.value=srcText;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");done()}catch(e){}ta.remove()}
+  };
+  setMode(location.hash==="#run"?"run":"code");
+  window.addEventListener("hashchange",function(){setMode(location.hash==="#run"?"run":"code")});
+})();
+</script>
+</body>
+</html>
