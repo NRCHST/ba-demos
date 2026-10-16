@@ -24,6 +24,8 @@
   footer{margin-top:20px;font-size:13px;color:var(--muted);line-height:1.4}
   footer a{color:var(--muted)}
   h2.sec{font-size:20px;margin:22px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .st{font-size:12px;color:var(--muted);margin:2px 0 10px;line-height:1.5}
+  .pill{display:inline-block;font-size:11px;padding:1px 7px;border:1px solid var(--border);border-radius:999px;margin-right:6px}
 </style>
 </head>
 <body>
@@ -36,6 +38,7 @@
     <li>
       <h2>Bitmap Lab</h2>
       <p>Kies een bloknummer en zie het als een “wijk”: elke transactie in dat blok is een “perceel”.</p>
+      <p class="st" data-demo="bitmap-lab"></p>
       <div class="links">
         <a class="run" href="bitmap-lab/#run">Run</a>
         <a href="bitmap-lab/#code">Code</a>
@@ -44,6 +47,7 @@
     <li>
       <h2>Bitmap Wereld</h2>
       <p>De openbare patroongalerijen (999 club, punks) als 3D-wijk. Tik een blok voor zijn inscription-ID.</p>
+      <p class="st" data-demo="bitmap-wereld"></p>
       <div class="links">
         <a class="run" href="bitmap-wereld/#run">Run</a>
         <a href="bitmap-wereld/#code">Code</a>
@@ -52,6 +56,7 @@
     <li>
       <h2>Gratis bitmap-tool</h2>
       <p>Plak bloknummers of een adres en zie die bitmaps in 3D met patroontags. Alleen lezen, geen wallet koppelen.</p>
+      <p class="st" data-demo="bitmap-tool"></p>
       <div class="links">
         <a class="run" href="bitmap-tool/#run">Run</a>
         <a href="bitmap-tool/#code">Code</a>
@@ -60,6 +65,7 @@
     <li>
       <h2>Bulletin-ontwerp bitmap.land</h2>
       <p>Alleen een ontwerp van een bulletin. Niets wordt ingeschreven of gepost.</p>
+      <p class="st" data-demo="bulletin-ontwerp"></p>
       <div class="links">
         <a class="run" href="bulletin-ontwerp/#run">Run</a>
         <a href="bulletin-ontwerp/#code">Code</a>
@@ -68,5 +74,17 @@
   </ul>
   </section>
   <footer>Broncode: <a href="https://github.com/NRCHST/ba-demos">github.com/NRCHST/ba-demos</a></footer>
+<script>
+// Status per demo: hier bijwerken (fase: Ontwerp | Proef | Werkt)
+var DEMOS={
+  "bitmap-lab":      {fase:"Werkt",   bijgewerkt:"2026-09-28", volgende:"nog niet bepaald"},
+  "bitmap-wereld":   {fase:"Werkt",   bijgewerkt:"2026-10-16", volgende:"nog niet bepaald"},
+  "bitmap-tool":     {fase:"Proef",   bijgewerkt:"2026-10-16", volgende:"adres-opzoeking testen"},
+  "bulletin-ontwerp":{fase:"Ontwerp", bijgewerkt:"2026-10-16", volgende:"schema van bitmap.land zoeken"}
+};
+(function(){var M=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+document.querySelectorAll(".st[data-demo]").forEach(function(el){var d=DEMOS[el.dataset.demo];if(!d)return;var p=d.bijgewerkt.split("-");
+el.innerHTML='<span class="pill">'+d.fase+'</span>Bijgewerkt '+(+p[2])+' '+M[p[1]-1]+' '+p[0]+' · Volgende stap: '+d.volgende;});})();
+</script>
 </body>
 </html>
